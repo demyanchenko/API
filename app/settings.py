@@ -1,0 +1,1 @@
+ALLOWED_HOSTS = ["localhost", "192.168.68.105"]
