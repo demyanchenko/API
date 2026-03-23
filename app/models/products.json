@@ -1,0 +1,50 @@
+[
+    {
+        "id": "1e59905b-7346-4ee5-b832-3e54b08d3a73",
+        "title": "Nike shoes",
+        "price": 10.5,
+        "quantity": 1
+    },
+    {
+        "id": "f5c5ae11-abd2-43ab-be03-73887da93905",
+        "title": "Adidas shoes",
+        "price": 13.0,
+        "quantity": 2
+    },
+    {
+        "id": "a80cac12-4489-4624-be4b-4dbded3b45be",
+        "title": "Reebok shoes",
+        "price": 9.0,
+        "quantity": 13
+    },
+    {
+        "id": "f41aed27-fab6-45f7-a67f-297e992addd7",
+        "title": "Authlete shoes",
+        "price": 15.8,
+        "quantity": 1
+    },
+    {
+        "id": "7b541dd6-99ff-4b21-bffc-790390c8c95f",
+        "title": "Bekka shoes",
+        "price": 15.8,
+        "quantity": 1
+    },
+    {
+        "id": "d8f4c0be-a0fe-4a8c-8ef5-9b587c0c3461",
+        "title": "Шмот",
+        "price": 15,
+        "quantity": 300
+    },
+    {
+        "id": "9d66a0fa-dc09-4a23-9bf7-841bf9f18efd",
+        "title": "Чебурашка",
+        "price": 1500,
+        "quantity": 28
+    },
+    {
+        "id": "08fd14dc-8f8d-4659-ad07-810399d4d18d",
+        "title": "Эбигейл",
+        "price": 350,
+        "quantity": 1000
+    }
+]

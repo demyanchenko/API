@@ -10,7 +10,7 @@ def dict_list_to_json(dict_list, filename):
     :return: JSON-строка или None в случае ошибки
     """
     try:
-        json_str = json.dumps(dict_list, ensure_ascii=False)
+        json_str = json.dumps(dict_list, indent=4, ensure_ascii=False)
         with open(filename, 'w', encoding='utf-8') as file:
             file.write(json_str)
         return json_str
