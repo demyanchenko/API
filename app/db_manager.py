@@ -37,19 +37,21 @@ def connect():
         print(f"Ошибка подключения: {e}")
 
 # Выполнение SELECT
-def execute_read_query(connection, query):
+def db_execute_query(connection, query):
     cursor = connection.cursor()
     result = None
     try:
         cursor.execute(query)
         # connection.commit()
         result = cursor.fetchall()
+        cursor.close()
         return result
     except Exception as e:
+        cursor.close()
         print(f"The error '{e}' occurred")
 
-# Выполнение SELECT
-def execute_one_record(connection, id):
+# Выполнение SELECT by id
+def db_select_product_by_id(connection, id):
     query = "SELECT * FROM product WHERE id='" + id + "';"
     print(query)
     cursor = connection.cursor()
@@ -59,12 +61,14 @@ def execute_one_record(connection, id):
         cursor.execute(query)
         # connection.commit()
         result = cursor.fetchone()
+        cursor.close()
         return result
     except Exception as e:
+        cursor.close()
         print(f"Select error:'{e}'")
 
 # Выполнение INPUT
-def execute_input_query(connection, title, price, quantity):
+def db_input_product(connection, title, price, quantity):
     query = "INSERT INTO product (title, price, quantity) VALUES (%s,%s,%s) RETURNING id;"
     cursor = connection.cursor()
     result = None
@@ -73,20 +77,40 @@ def execute_input_query(connection, title, price, quantity):
         cursor.execute(query, (title, price, quantity))
         # connection.commit()
         id_of_new_row = cursor.fetchone()[0]
-        result = execute_one_record(connection, id_of_new_row)
+        result = db_select_product_by_id(connection, id_of_new_row)
+        cursor.close()
         return result
     except Exception as e:
-        print(f"Input error '{e}' occurred")
+        cursor.close()
+        print(f"Input error: '{e}'")
 
 # Выполнение UPDATE
-def execute_update_query(connection, title, price, quantity, id):
+def db_update_product_by_id(connection, title, price, quantity, id):
     query = "UPDATE product SET title=%s, price=%s, quantity=%s WHERE id=%s;"
     cursor = connection.cursor()
     result = None
     try:
         cursor.execute(query, (title, price, quantity, id))
         # connection.commit()
-        result = execute_one_record(connection, id)
+        result = db_select_product_by_id(connection, id)
+        cursor.close()
         return result
     except Exception as e:
-        print(f"Update error '{e}' occurred")
+        cursor.close()
+        print(f"Update error: '{e}'")
+
+# Выполнение DELETE
+def db_delete_product_by_id(connection, id):
+    query = "DELETE FROM product WHERE id=%(prod_id)s;"
+    print(query, id)
+    cursor = connection.cursor()
+    result = None
+    try:
+        cursor.execute(query, {'prod_id': id,})
+        # connection.commit()
+        # result = execute_one_record(connection, id)
+        cursor.close()
+        return id
+    except Exception as e:
+        cursor.close()
+        print(f"Delete error: '{e}'")

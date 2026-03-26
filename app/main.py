@@ -4,6 +4,11 @@
 # Установить библиотеки (зависимости)
 # pip install -r requirements.txt
 #
+# 1) Запустить сервер
+# uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+# 2) Запустить Postrge SQL
+# pg_ctl -D /usr/local/var/postgres start
+#
 # Swagger
 # http://192.168.68.105:8000/docs#/default/get_all_students_course_students__course__get
 
@@ -12,13 +17,13 @@ import sys
 sys.path.append('./app')
 sys.path.append('./app/models')
 sys.path.append('./app/api')
-
+import json
 import uuid
 from fastapi import FastAPI, Body, status
 from fastapi.responses import JSONResponse, FileResponse
 import os
 from typing import Optional
-from utils import json_to_dict_list, dict_list_to_json
+from file_utils import json_to_dict_list, dict_list_to_json
 from typing import List
 import copy
 
@@ -39,7 +44,7 @@ import product
 # products = json_to_dict_list(path_to_json_products)
 
 # Подключаем БД
-from database import connect, execute_read_query, execute_one_record, execute_input_query, execute_update_query
+from db_manager import connect, db_execute_query, db_select_product_by_id, db_input_product, db_update_product_by_id, db_delete_product_by_id
 connection = connect()
 
 app = FastAPI()
@@ -54,9 +59,17 @@ def home_page():
 #
 @app.get("/products")
 def get_all_products():
-    # products = json_to_dict_list(path_to_json_products)
     query = "SELECT * FROM product;"
-    products = execute_read_query(connection, query)
+    result = db_execute_query(connection, query)
+    products = []
+    for product in result:
+        product = {
+            "id": product[0],
+            "title": product[1],
+            "price": product[2],
+            "quantity": product[3]
+        }
+        products.append(product)
     return products
 
 @app.post("/product")
@@ -69,14 +82,12 @@ async def create_product(data = Body()):
 
 @app.put("/product")
 async def put_product(data  = Body()):
-    print("data--: ",data)
-    # print("products--: ",products)
+    # print("data--: ",data)
     # получаем пользователя по id (если указан)
     if 'id' in data:
         print("finded 'id' in 'data'")
-        print(data["id"])
-        # product = find_products(data["id"])
-        product = execute_one_record(connection, data["id"])
+        # print(data["id"])
+        product = db_select_product_by_id(connection, data["id"])
     else:
         # иначе направляем на создание нового ресурса
         print("Not found index 'id' in 'data'")
@@ -85,18 +96,7 @@ async def put_product(data  = Body()):
     # если ресурс не найден
     if product == None:
         # если не найден, добавляем новый продукт в список products
-        # tmp = Product(data["title"], data["price"], data["quantity"])
-        # product = {
-        #     # "id": tmp.id,
-        #     "title": tmp.title,
-        #     "price": tmp.price,
-        #     "quantity": tmp.quantity
-        # }
-        # очищаем память от временной переменной
-        # del tmp
-        # products.append(product)
-        product = execute_input_query(connection, data["title"], data["price"], data["quantity"])
-        # record_result = dict_list_to_json(products, path_to_json_products)
+        product = db_input_product(connection, data["title"], data["price"], data["quantity"])
         product = {
             "id": product[0],
             "title": product[1],
@@ -104,34 +104,36 @@ async def put_product(data  = Body()):
             "quantity": product[3]
         }
         print("Аdd product: ", product)
-        # product = create_product(data)
         return {"message": "PUT запрос выполнен успешно, создан новый продукт", "data": product}
     else:
         # если продукт найден, изменяем его данные и отправляем обратно клиенту
-        # index = products.index(product)
-        product = execute_update_query(connection, data["title"], data["price"], data["quantity"], data["id"])
-        # print("Элемент номер: ", index)
-        # products[index]["title"] = data["title"]
-        # products[index]["price"] = data["price"]
-        # products[index]["quantity"] = data["quantity"]
-        # record_result = dict_list_to_json(products, path_to_json_products)
-        # print("File update reload: ",record_result,"\n", products,"\n", product)
+        product = db_update_product_by_id(connection, data["title"], data["price"], data["quantity"], data["id"])
         print("Update product: ", product)
-
     return {"message": "PUT запрос выполнен успешно, продукт изменён", "data": data}
 
 @app.delete("/product/{id}")
 def delete_product(id):
-    product = find_products(id)
+    product = db_select_product_by_id(connection, id)
     if product == None:
         return JSONResponse(
             status_code=status.HTTP_404_NOT_FOUND,
             content={ "message": "Продукт не найден" }
         )
-    products.remove(product)
-    record_result = dict_list_to_json(products, path_to_json_products)
-    print("Delete product: ", product)
-    return product
+    deleted_id = db_delete_product_by_id(connection, id)
+    if deleted_id:
+        product = {
+            "id": product[0],
+            "title": product[1],
+            "price": product[2],
+            "quantity": product[3]
+        }
+        print("Delete product: ", product)
+        return product
+    else:
+        return JSONResponse(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            content={ "message": "Ошибка при удалении продукта" }
+        )
 
 
 
