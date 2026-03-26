@@ -7,8 +7,9 @@ def connect():
         connection = psycopg2.connect(
             dbname="product_db",
             user="product_owner",
-            # user="demyanchenkoao",
             password="1234567890",
+            # user="security_owner",
+            # password="psecureg109#",
             host="localhost",
             port="5432"
         )
@@ -25,12 +26,10 @@ def connect():
         print(f"Текущая база: {current_database}")
         # Выполняем запрос
         cursor.execute("SELECT table_name FROM information_schema.tables WHERE table_schema = 'public';")
-        # cursor.execute("CREATE TABLE product ( id UUID, title VARCHAR(200) NOT NULL, price NUMERIC, quantity INT, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP);")
-        # cursor.execute("CREATE EXTENSION IF NOT EXISTS 'uuid-ossp';")
         all_tables = cursor.fetchall()
         print(f"Доступны таблицы: {all_tables}")
         # Закрываем соединение
-        # cursor.close()
+        cursor.close()
         # connection.close()
         return connection
     except Exception as e:
@@ -52,13 +51,13 @@ def db_execute_query(connection, query):
 
 # Выполнение SELECT by id
 def db_select_product_by_id(connection, id):
-    query = "SELECT * FROM product WHERE id='" + id + "';"
+    query = "SELECT * FROM product WHERE id=%(prod_id)s;"
     print(query)
     cursor = connection.cursor()
     result = None
     try:
         # cursor.execute(query)
-        cursor.execute(query)
+        cursor.execute(query, {'prod_id': id,})
         # connection.commit()
         result = cursor.fetchone()
         cursor.close()
@@ -77,8 +76,10 @@ def db_input_product(connection, title, price, quantity):
         cursor.execute(query, (title, price, quantity))
         # connection.commit()
         id_of_new_row = cursor.fetchone()[0]
+        print(id_of_new_row)
         result = db_select_product_by_id(connection, id_of_new_row)
-        cursor.close()
+        print(result)
+        # cursor.close()
         return result
     except Exception as e:
         cursor.close()
