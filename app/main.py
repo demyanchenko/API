@@ -55,6 +55,12 @@ app = FastAPI()
 def home_page():
     return {"message": "Hello, world!"}
 
+# Заголовок ресурса
+#
+@app.head("/products")
+def head_source():
+    return {"message": "HEAD response"}
+
 # API продукта
 #
 @app.get("/products")
@@ -135,7 +141,13 @@ def delete_product(id):
             content={ "message": "Ошибка при удалении продукта" }
         )
 
-
+# API авторизация пользователя
+@app.post("/auth")
+async def authorization_user(data = Body()):
+    print(data)
+    # print(data["login"], data["password"])
+    # return product
+    return {"message": "POST запрос выполнен успешно", "data": data}
 
 # API студенты
 #
