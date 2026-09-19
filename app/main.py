@@ -48,7 +48,7 @@ path_to_json_products = os.path.join(script_dir, 'models/products.json')
 
 import product
 # import ai_assistant
-from app.ai.ai_assistant import ai_connect
+from app.ai.ai_assistant import ai_connect, ai_model_list
 
 # условная база данных - набор объектов Product
 # products = [Product("Nike shoes", 10.5, 1), Product("Adidas shoes", 13.0, 20)]
@@ -76,6 +76,13 @@ def home_page(promt: str | None = Query(default="Привет", max_length=1050)
     # print(ai_model_list())
     message = ai_connect(promt)
     return {"message": message}
+
+# Показать имеющиеся модели на сервере
+#
+@app.get("/ai/models")
+def home_page():
+    message = ai_model_list()
+    return {"models": message}
 
 
 

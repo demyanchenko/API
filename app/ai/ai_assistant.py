@@ -1,10 +1,10 @@
-from openai import OpenAI
 import requests
 import urllib3
 import json
 import os
 
 def ai_model_list():
+    from openai import OpenAI
     client = OpenAI(
         base_url="https://alfagen.moscow.alfaintra.net/continue-dev",
         api_key="04e8a51a-b5d8-4c55-ba3a-05632cde66b8",
