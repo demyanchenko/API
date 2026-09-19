@@ -76,10 +76,8 @@ def db_input_product(connection, title, price, quantity):
         cursor.execute(query, (title, price, quantity))
         # connection.commit()
         id_of_new_row = cursor.fetchone()[0]
-        print(id_of_new_row)
         result = db_select_product_by_id(connection, id_of_new_row)
-        print(result)
-        # cursor.close()
+        cursor.close()
         return result
     except Exception as e:
         cursor.close()

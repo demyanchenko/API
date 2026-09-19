@@ -6,26 +6,35 @@
 #
 # 1) Запустить сервер
 # uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+# или для HTTPS
+# uvicorn app.main:app --reload --host 0.0.0.0 --port 8000 --ssl-keyfile "./cert/device.key" --ssl-certfile "./cert/localhost.crt"
 # 2) Запустить Postrge SQL
 # pg_ctl -D /usr/local/var/postgres start
-#
+# ИЛИ остановить:
+# pg_ctl -D /usr/local/var/postgres stop
 # Swagger
 # http://192.168.68.105:8000/docs#/default/get_all_students_course_students__course__get
+#
+# Ресурс будет доступен по адресам:
+# http://192.168.68.106:8000/ (нужно предварительно выяснить IP-адрес ПК в локальной сети, например, ifconfig | grep "inet" | grep "broadcast")
+# http://localhost:8000/
+# Выпуск rootCA сертификата для HTTPS
+# openssl req -newkey rsa:1024 -x509 -sha256 -days 365 -out certificate.cert -keyout certificate.key -nodes -subj "/C=RUS/ST=RO/L=Rostov-on-Don/O=MySelf/OU=MySelfUnit/CN=macbook/emailAddress=demyanchenko.ao@gmail.com"
+# openssl req -new -newkey rsa:2048 -sha256 -nodes -keyout device.key -subj "/C=CA/ST=None/L=NB/O=None/CN=Product Server" -out device.csr
+
 
 # Добавляем внутренний каталог для импорта
 import sys
+
 sys.path.append('./app')
 sys.path.append('./app/models')
 sys.path.append('./app/api')
-import json
-import uuid
-from fastapi import FastAPI, Body, status
-from fastapi.responses import JSONResponse, FileResponse
+sys.path.append('./app/ai')
+from fastapi import FastAPI, Body, status, Query
+from fastapi.responses import JSONResponse
 import os
 from typing import Optional
-from file_utils import json_to_dict_list, dict_list_to_json
-from typing import List
-import copy
+from file_utils import json_to_dict_list
 
 # Получаем путь к директории (/app), где лежит текущий скрипт (main.py)
 script_dir = os.path.dirname(os.path.abspath(__file__))
@@ -38,6 +47,8 @@ path_to_json_products = os.path.join(script_dir, 'models/products.json')
 
 
 import product
+# import ai_assistant
+from app.ai.ai_assistant import ai_connect
 
 # условная база данных - набор объектов Product
 # products = [Product("Nike shoes", 10.5, 1), Product("Adidas shoes", 13.0, 20)]
@@ -53,7 +64,20 @@ app = FastAPI()
 #
 @app.get("/")
 def home_page():
+    # print(ai_model_list())
     return {"message": "Hello, world!"}
+
+
+
+# Обращение к ИИ-агенту
+#
+@app.get("/ai")
+def home_page(promt: str | None = Query(default="Привет", max_length=1050)):
+    # print(ai_model_list())
+    message = ai_connect(promt)
+    return {"message": message}
+
+
 
 # Заголовок ресурса
 #
@@ -62,7 +86,7 @@ def head_source():
     return {"message": "HEAD response"}
 
 # API продукта
-#
+#/Users/demyanchenkoao/API/app/resp.txt
 @app.get("/products")
 def get_all_products():
     query = "SELECT * FROM product;"

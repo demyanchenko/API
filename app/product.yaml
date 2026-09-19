@@ -1,0 +1,95 @@
+openapi: 3.1.0
+info:
+  title: Product
+  description: Простое API для управления продуктами
+  version: 1.0.0
+servers:
+  - url: 'http://192.168.68.112:8000'
+    description: Локальный сервер
+paths:
+  /products:
+    get:
+      summary: Получить список продуктов
+      description: Get all products
+      responses:
+        '200':
+          description: Продукты успешно найдены
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Product'
+        '400':
+          description: Некорректный запрос (неверный ID)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Книга не найдена
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Внутренняя ошибка сервера
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+components:
+  schemas:
+    # Схема продукта, основного объекта
+    Product:
+      description: Продукт
+      type: object
+      required:
+        - id
+        - title
+        - price
+        - quantity
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: Уникальный идентификатор
+          example: 42
+        title:
+          type: string
+          description: Наименование
+          example: "Nike"
+        price:
+          type: Number
+          format: float
+          description: Стоимость
+          example:
+            1500.01
+        quantity:
+          type: integer
+          format: int64
+          description: Количество
+          example:
+            300
+#      additionalProperties: false
+
+
+    # Схема ошибки, универсальная
+    Error:
+      description: Стандартный формат ошибки
+      type: object
+      required:
+        - message
+      properties:
+        code:
+          type: integer
+          description: Код ошибки
+          example: 404
+        message:
+          type: string
+          description: Сообщение об ошибке
+          example: "Продукт с указанным ID не найдена."
+        timestamp:
+          type: string
+          format: date-time
+          description: Время возникновения ошибки
+          example: "2024-01-15T10:30:00Z"
+#      additionalProperties: false
